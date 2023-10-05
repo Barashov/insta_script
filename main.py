@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 
 from db import create_tables
-from crud import update_user
+from crud import update_user, get_users
 import settings
 
 APP_DIR: Path = Path(__file__).parent
@@ -180,23 +180,34 @@ def convert_sqlite_to_excel(conn):
     df.to_excel(f'data/{settings.USER_ID}.xlsx')
 
 
-
 if __name__ == "__main__":
     pass
     # with sqlite3.connect(f'data/{settings.USER_ID}.sqlite') as connection:
     #     create_tables(connection)
 
+    # TODO список подписчиков я еще не получал
     # users = load_followers
     # save_qql_followers_to_base()
 
-    # order_by = 0
-    # while True:
-    #     users = get_users(limit=10, order_by=order_by)
-    #     for user in users:
-    #         user_data = client.user_by_id_v1(user.pk)
+    # TODO здесь мы будем собирать данные о каждом пользователе
+    with sqlite3.connect('data/6672393852.sqlite') as conn:
+        offset = 0
 
+        while True:
+            users = get_users(conn, limit=10, offset=offset)
 
+            # TODO я вручную добавил в той бд новые поля. Здесь получаем данные по каждому пользователю
+            # TODO не надо получать все поля
+            # for user in users:
+            #     if is_full_data:
+            #         user_data = client.user_by_id_v1(user[0])
+            #         update_user()
 
+            if len(users) < 10:
+                break
+
+        # конвертируем в эксель
+        # convert_sqlite_to_excel(conn)
 
     # load_users()
     # convert_sqlite_to_excel()
