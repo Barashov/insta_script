@@ -1,6 +1,10 @@
 import sqlite3
 
 
+def get_value(value):
+    return "" if value is None else value
+
+
 def update_user(conn: sqlite3.Connection,
                 pk: int,
                 media_count: int,
@@ -25,46 +29,49 @@ def update_user(conn: sqlite3.Connection,
                 longitude: int,
                 zip: str,
                 instagram_location_id: str,
-                interop_messaging_user_fbid: str):
+                interop_messaging_user_fbid: str,
+                **kwargs):
 
     query = f"""
     update followers
     set 
-    is_full_data = 1,
-    media_count = {media_count},
-    follower_count = {follower_count},
-    following_count = {following_count},
-    biography = {biography},
-    external_url = {external_url},
-    account_type = {account_type},
-    is_business = {is_business},
-    public_email = {public_email},
-    contact_phone_number = {contact_phone_number},
-    public_phone_country_code = {public_phone_country_code},
-    public_phone_number = {public_phone_number},
-    business_contact_method = {business_contact_method},
-    business_category_name = {business_category_name},
-    category_name = {category_name},
-    category = {category},
-    address_street = {address_street},
-    city_id = {city_id},
-    city_name = {city_name},
-    latitude = {latitude},
-    longitude = {longitude}
-    zip = {zip},
-    instagram_location_id = {instagram_location_id}
-    interop_messaging_user_fbid = {interop_messaging_user_fbid}
+    is_full_data=1,
+    media_count="{get_value(media_count)}",
+    follower_count="{get_value(follower_count)}",
+    following_count="{get_value(following_count)}",
+    biography="{biography}",
+    external_url="{get_value(external_url)}",
+    account_type={account_type},
+    is_business={is_business},
+    public_email="{get_value(public_email)}",
+    contact_phone_number="{get_value(contact_phone_number)}",
+    public_phone_country_code="{get_value(public_phone_country_code)}",
+    public_phone_number="{get_value(public_phone_number)}",
+    business_contact_method="{get_value(business_contact_method)}",
+    business_category_name="{get_value(business_category_name)}",
+    category_name="{get_value(category_name)}",
+    category="{get_value(category)}",
+    address_street="{get_value(address_street)}",
+    city_id="{get_value(city_id)}",
+    city_name="{get_value(city_name)}",
+    latitude="{latitude}",
+    longitude="{longitude}",
+    zip="{get_value(zip)}",
+    instagram_location_id="{get_value(instagram_location_id)}",
+    interop_messaging_user_fbid="{get_value(interop_messaging_user_fbid)}"
     where 
     pk={pk}
     """
+    print(query)
     conn.execute(query)
+    conn.commit()
 
 
 def get_users(conn: sqlite3.Connection,
               offset: int,
               limit: int):
     query = """
-    select * from followers
+    select pk, is_full_data from followers
     limit ?
     offset ?
     """

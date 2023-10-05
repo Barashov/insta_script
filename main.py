@@ -9,6 +9,7 @@ from pathlib import Path
 import os
 from datetime import datetime
 
+from time import time
 from db import create_tables
 from crud import update_user, get_users
 import settings
@@ -22,6 +23,15 @@ DEFAULT_FOLLOWERS_PAGES_TABLE_NAME = f"{DEFAULT_FOLLOWERS_TABLE_NAME}_pages"
 
 load_dotenv()
 logger = logging.getLogger()
+
+
+def check_time(func):
+    def wrapper(*args, **kwargs):
+        start_time = time()
+        result = func(*args, **kwargs)
+        print(time() - start_time)
+        return result
+    return wrapper
 
 
 def init_logger(logging_level: int = logging.INFO):
@@ -179,9 +189,39 @@ def convert_sqlite_to_excel(conn):
     df = pandas.read_sql(con=conn, sql="SELECT * FROM 'followers'")
     df.to_excel(f'data/{settings.USER_ID}.xlsx')
 
+@check_time
+def get_and_update_user(conn: sqlite3.Connection,
+                        client: Client,
+                        user: tuple):
+    if not is_full_data(user):
+        try:
+            pk = user[0]
+            start_time = time()
+            user = client.user_by_id_v1(pk)
+            print(user)
+            print(f'time of hiker api request: {time() - start_time}')
+
+            start_time = time()
+            update_user(conn,
+                        **user)
+            print(f'time of db request: {time() - start_time}')
+        except Exception as ex:
+            print(ex)
+
+
+@check_time
+def get_and_update_users(conn: sqlite3.Connection,
+                         client: Client,
+                         users: list[tuple]):
+    for user in users:
+        get_and_update_user(conn, client, user)
+
+
+def is_full_data(user: tuple):
+    return bool(user[1])
+
 
 if __name__ == "__main__":
-    pass
     # with sqlite3.connect(f'data/{settings.USER_ID}.sqlite') as connection:
     #     create_tables(connection)
 
@@ -189,22 +229,33 @@ if __name__ == "__main__":
     # users = load_followers
     # save_qql_followers_to_base()
 
-    # TODO здесь мы будем собирать данные о каждом пользователе
+    # TODO вставь сюда токен
+    hiker_api_client = Client('WdzQnGJ7')
+
     with sqlite3.connect('data/6672393852.sqlite') as conn:
-        offset = 0
+        # здесь мы указываем limit(сколько пользователей взять) и offset(с какого пользователя начать)
+        # к примеру прошлый запрос я выполнил с limit 30 и offset 150
+        # следующий запрос будет таким limit (пусть будет 100) offset 180. так как прошлый лимит 30
+        # по сути мы добавляем к offset предыдущий лимит
+        users = get_users(conn, limit=30, offset=150)
 
-        while True:
-            users = get_users(conn, limit=10, offset=offset)
+    # у меня кидало ошибку. я сделал 2 подключения к бд
+    with sqlite3.connect('data/6672393852.sqlite') as conn:
+        get_and_update_users(conn, hiker_api_client, users)
 
-            # TODO я вручную добавил в той бд новые поля. Здесь получаем данные по каждому пользователю
-            # TODO не надо получать все поля
-            # for user in users:
-            #     if is_full_data:
-            #         user_data = client.user_by_id_v1(user[0])
-            #         update_user()
-
-            if len(users) < 10:
-                break
+        # здесь можно сделать цикл. он будет сам вычислять offset
+        # while True:
+        #     users = get_users(conn, limit=10, offset=offset)
+        #
+        #     # TODO я вручную добавил в той бд новые поля. Здесь получаем данные по каждому пользователю
+        #     # TODO не надо получать все поля
+        #     # for user in users:
+        #     #     if is_full_data:
+        #     #         user_data = client.user_by_id_v1(user[0])
+        #     #         update_user()
+        #
+        #     if len(users) < 10:
+        #         break
 
         # конвертируем в эксель
         # convert_sqlite_to_excel(conn)

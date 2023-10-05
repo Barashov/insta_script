@@ -4,4 +4,4 @@ import os
 
 load_dotenv()
 
-USER_ID = os.environ['USER_ID']
+USER_ID = os.environ.get('USER_ID', 'ok')
