@@ -39,7 +39,7 @@ def update_user(conn: sqlite3.Connection,
     media_count="{get_value(media_count)}",
     follower_count="{get_value(follower_count)}",
     following_count="{get_value(following_count)}",
-    biography="{biography}",
+    biography='{biography}',
     external_url="{get_value(external_url)}",
     account_type={account_type},
     is_business={is_business},
@@ -78,6 +78,30 @@ def get_users(conn: sqlite3.Connection,
 
     cursor = conn.cursor()
     cursor.execute(query, (limit, offset))
+
+    result = cursor.fetchall()
+    return result
+
+
+def get_users_without_data(conn: sqlite3.Connection, limit: int):
+    query = """
+    select pk, is_full_data from followers
+    where is_full_data is null or is_full_data=0
+    limit ?
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (limit, ))
+
+    result = cursor.fetchall()
+    return result
+
+
+def get_user_by_pk(conn: sqlite3.Connection, pk):
+    query = """
+    select pk, is_full_data from followers where pk=?
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (pk,))
 
     result = cursor.fetchall()
     return result

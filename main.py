@@ -11,7 +11,7 @@ from datetime import datetime
 
 from time import time
 from db import create_tables
-from crud import update_user, get_users
+from crud import update_user, get_users, get_users_without_data, get_user_by_pk
 import settings
 
 APP_DIR: Path = Path(__file__).parent
@@ -230,14 +230,17 @@ if __name__ == "__main__":
     # save_qql_followers_to_base()
 
     # TODO вставь сюда токен
-    hiker_api_client = Client('WdzQnGJ7')
+    hiker_api_client = Client('WdzQnGJ7bLtjCdocYcmJs5OfmlwSHST0')
 
     with sqlite3.connect('data/6672393852.sqlite') as conn:
         # здесь мы указываем limit(сколько пользователей взять) и offset(с какого пользователя начать)
         # к примеру прошлый запрос я выполнил с limit 30 и offset 150
         # следующий запрос будет таким limit (пусть будет 100) offset 180. так как прошлый лимит 30
         # по сути мы добавляем к offset предыдущий лимит
-        users = get_users(conn, limit=30, offset=150)
+        # users = get_users(conn, limit=30, offset=150)
+        users = get_users_without_data(conn, limit=3)
+
+        # users = get_user_by_pk(conn, 7236686403)
 
     # у меня кидало ошибку. я сделал 2 подключения к бд
     with sqlite3.connect('data/6672393852.sqlite') as conn:
