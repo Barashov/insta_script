@@ -5,3 +5,4 @@ import os
 load_dotenv()
 
 USER_ID = os.environ.get('USER_ID', 'ok')
+TOKEN = os.environ.get('TOKEN')

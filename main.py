@@ -230,7 +230,7 @@ if __name__ == "__main__":
     # save_qql_followers_to_base()
 
     # TODO вставь сюда токен
-    hiker_api_client = Client('WdzQnGJ7bLtjCdocYcmJs5OfmlwSHST0')
+    hiker_api_client = Client(settings.TOKEN)
 
     with sqlite3.connect('data/6672393852.sqlite') as conn:
         # здесь мы указываем limit(сколько пользователей взять) и offset(с какого пользователя начать)
@@ -238,6 +238,8 @@ if __name__ == "__main__":
         # следующий запрос будет таким limit (пусть будет 100) offset 180. так как прошлый лимит 30
         # по сути мы добавляем к offset предыдущий лимит
         # users = get_users(conn, limit=30, offset=150)
+
+
         users = get_users_without_data(conn, limit=3)
 
         # users = get_user_by_pk(conn, 7236686403)
@@ -261,6 +263,8 @@ if __name__ == "__main__":
         #         break
 
         # конвертируем в эксель
+
+    # TODO убрать коммент чтобы певратить в excel
         # convert_sqlite_to_excel(conn)
 
     # load_users()

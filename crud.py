@@ -39,7 +39,7 @@ def update_user(conn: sqlite3.Connection,
     media_count="{get_value(media_count)}",
     follower_count="{get_value(follower_count)}",
     following_count="{get_value(following_count)}",
-    biography='{biography}',
+    biography=?,
     external_url="{get_value(external_url)}",
     account_type={account_type},
     is_business={is_business},
@@ -51,7 +51,7 @@ def update_user(conn: sqlite3.Connection,
     business_category_name="{get_value(business_category_name)}",
     category_name="{get_value(category_name)}",
     category="{get_value(category)}",
-    address_street="{get_value(address_street)}",
+    address_street= ?,
     city_id="{get_value(city_id)}",
     city_name="{get_value(city_name)}",
     latitude="{latitude}",
@@ -63,6 +63,7 @@ def update_user(conn: sqlite3.Connection,
     pk={pk}
     """
     print(query)
+    conn.execute(query, (get_value(address_street)), (get_value(biography)))
     conn.execute(query)
     conn.commit()
 
