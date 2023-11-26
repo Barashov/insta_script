@@ -106,3 +106,15 @@ def get_user_by_pk(conn: sqlite3.Connection, pk):
 
     result = cursor.fetchall()
     return result
+
+
+def save_media_to_db(session: sqlite3.Connection,
+                     **media):
+    columns = ', '.join(media.keys())
+    values = ', '.join(['?' for _ in media])
+    query = f"INSERT INTO medias ({columns}) VALUES ({values})"
+    print(query)
+    session.execute(query, tuple(media.values()))
+
+    session.commit()
+

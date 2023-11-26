@@ -50,3 +50,40 @@ def create_tables(
 
     conn.execute(create_followers_table_sql)
     conn.execute(create_pages_table_sql)
+
+
+def create_medias_table(conn: sqlite3.Connection):
+    query = """
+CREATE TABLE medias (
+    pk INT PRIMARY KEY,
+    user_pk INT,
+    id TEXT,
+    code TEXT,
+    taken_at TIMESTAMP,
+    taken_at_ts BIGINT,
+    media_type INT,
+    product_type TEXT,
+    thumbnail_url TEXT,
+    location TEXT,
+    comment_count INT,
+    comments_disabled BOOLEAN,
+    like_count INT,
+    play_count INT,
+    has_liked BOOLEAN,
+    caption_text TEXT,
+    accessibility_caption TEXT,
+    usertags TEXT,
+    sponsor_tags TEXT,
+    video_url TEXT,
+    view_count INT,
+    video_duration REAL,
+    title TEXT,
+    video_dash_manifest TEXT,
+    like_and_view_counts_disabled BOOLEAN,
+    is_paid_partnership BOOLEAN,
+    images TEXT,
+    videos TEXT
+);
+    """
+    conn.execute(query)
+    conn.commit()

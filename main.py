@@ -8,10 +8,11 @@ from logging import StreamHandler
 from pathlib import Path
 import os
 from datetime import datetime
-
+from info import save_images, get_medias_by_pk
 from time import time
-from db import create_tables
-from crud import update_user, get_users, get_users_without_data, get_user_by_pk
+from db import create_tables, create_medias_table
+from crud import update_user
+from info import save_media
 import settings
 
 APP_DIR: Path = Path(__file__).parent
@@ -189,6 +190,7 @@ def convert_sqlite_to_excel(conn):
     df = pandas.read_sql(con=conn, sql="SELECT * FROM 'followers'")
     df.to_excel(f'data/{settings.USER_ID}.xlsx')
 
+
 @check_time
 def get_and_update_user(conn: sqlite3.Connection,
                         client: Client,
@@ -222,6 +224,8 @@ def is_full_data(user: tuple):
 
 
 if __name__ == "__main__":
+    os.makedirs('data/users/', exist_ok=True)
+
     # with sqlite3.connect(f'data/{settings.USER_ID}.sqlite') as connection:
     #     create_tables(connection)
 
@@ -229,10 +233,27 @@ if __name__ == "__main__":
     # users = load_followers
     # save_qql_followers_to_base()
 
-    # TODO вставь сюда токен
+
     hiker_api_client = Client(settings.TOKEN)
 
-    with sqlite3.connect('data/6672393852.sqlite') as conn:
+    instagram_ids = [
+        # '4684428768',
+        # '36804579964',
+        '1526321397'
+    ]
+    for id in instagram_ids:
+        medias = get_medias_by_pk(id, hiker_api_client)
+        print(f'скачивание {len(medias)} медиа пользователя {id}')
+        with sqlite3.connect('data/6672393852.sqlite') as conn:
+            for media in medias:
+                if type(media) is dict:
+                    save_media(id, media, hiker_api_client, conn)
+    # with sqlite3.connect('data/6672393852.sqlite') as conn:
+
+        # save_media('17553433580', media, hiker_api_client, conn)
+
+    # with sqlite3.connect('data/6672393852.sqlite') as conn:
+    #     create_medias_table(conn)
         # здесь мы указываем limit(сколько пользователей взять) и offset(с какого пользователя начать)
         # к примеру прошлый запрос я выполнил с limit 30 и offset 150
         # следующий запрос будет таким limit (пусть будет 100) offset 180. так как прошлый лимит 30
@@ -240,13 +261,14 @@ if __name__ == "__main__":
         # users = get_users(conn, limit=30, offset=150)
 
 
-        users = get_users_without_data(conn, limit=3)
+
+        # users = get_users_without_data(conn, limit=3)
 
         # users = get_user_by_pk(conn, 7236686403)
 
     # у меня кидало ошибку. я сделал 2 подключения к бд
-    with sqlite3.connect('data/6672393852.sqlite') as conn:
-        get_and_update_users(conn, hiker_api_client, users)
+    # with sqlite3.connect('data/6672393852.sqlite') as conn:
+        # get_and_update_users(conn, hiker_api_client, users)
 
         # здесь можно сделать цикл. он будет сам вычислять offset
         # while True:
