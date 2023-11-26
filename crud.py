@@ -97,6 +97,16 @@ def get_users_without_data(conn: sqlite3.Connection, limit: int):
     return result
 
 
+def get_users_without_media(conn: sqlite3.Connection, limit: int):
+    query = f"""
+SELECT pk FROM followers WHERE pk NOT IN (SELECT user_pk FROM medias) LIMIT ?;
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (limit, ))
+    result = cursor.fetchall()
+    return result
+
+
 def get_user_by_pk(conn: sqlite3.Connection, pk):
     query = """
     select pk, is_full_data from followers where pk=?

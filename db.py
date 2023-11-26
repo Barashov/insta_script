@@ -54,7 +54,7 @@ def create_tables(
 
 def create_medias_table(conn: sqlite3.Connection):
     query = """
-CREATE TABLE medias (
+CREATE TABLE IF NOT EXISTS medias (
     pk INT PRIMARY KEY,
     user_pk INT,
     id TEXT,

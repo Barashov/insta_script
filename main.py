@@ -11,7 +11,7 @@ from datetime import datetime
 from info import save_images, get_medias_by_pk
 from time import time
 from db import create_tables, create_medias_table
-from crud import update_user
+from crud import update_user, get_users_without_media
 from info import save_media
 import settings
 
@@ -224,33 +224,31 @@ def is_full_data(user: tuple):
 
 
 if __name__ == "__main__":
+    os.makedirs('data/', exist_ok=True)
     os.makedirs('data/users/', exist_ok=True)
+    db = 'data/6672393852.sqlite'
+    with sqlite3.connect(db) as connection:
+        create_tables(connection)
+        create_medias_table(connection)
 
-    # with sqlite3.connect(f'data/{settings.USER_ID}.sqlite') as connection:
-    #     create_tables(connection)
-
-    # TODO список подписчиков я еще не получал
     # users = load_followers
     # save_qql_followers_to_base()
 
-
     hiker_api_client = Client(settings.TOKEN)
 
-    instagram_ids = [
-        # '4684428768',
-        # '36804579964',
-        '1526321397'
-    ]
-    for id in instagram_ids:
-        medias = get_medias_by_pk(id, hiker_api_client)
-        print(f'скачивание {len(medias)} медиа пользователя {id}')
+    with sqlite3.connect(db) as connection:
+        # можно каждый раз запускать скрипт по новой. здесь просто берутся те id которых нет в media
+        # можно поставить в параллель ничего не меняя.
+        users = get_users_without_media(connection, 10)
+
+    for user in users:
+        pk = user[0]
+        medias = get_medias_by_pk(pk, hiker_api_client)
+        print(f'скачивание {len(medias)} медиа пользователя {pk}')
         with sqlite3.connect('data/6672393852.sqlite') as conn:
             for media in medias:
                 if type(media) is dict:
-                    save_media(id, media, hiker_api_client, conn)
-    # with sqlite3.connect('data/6672393852.sqlite') as conn:
-
-        # save_media('17553433580', media, hiker_api_client, conn)
+                    save_media(pk, media, hiker_api_client, conn)
 
     # with sqlite3.connect('data/6672393852.sqlite') as conn:
     #     create_medias_table(conn)
