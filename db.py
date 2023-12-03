@@ -41,7 +41,7 @@ def create_tables(
         ")"
     )
     create_pages_table_sql = (
-        f"CREATE TABLE IF NOT EXISTS {followers_table_name} "
+        f"CREATE TABLE IF NOT EXISTS {followers_table_name}_pages "
         "("
         "page_number INTEGER PRIMARY_KEY UNIQUE,"
         "cursor TEXT"

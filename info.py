@@ -1,5 +1,6 @@
 import sqlite3
 
+import requests
 from hikerapi import Client
 import os
 from crud import save_media_to_db
@@ -46,12 +47,14 @@ def save_images(client: Client,
     paths = []
     os.makedirs(f'data/users/{user_pk}/medias/{media["pk"]}/images/',
                 exist_ok=True)
-    try:
-        with open(f'data/users/{user_pk}/medias/{media["pk"]}/images/trumbnail.jpg', 'wb') as file:
-            response = client.media_download_photo_by_url_v1(media['thumbnail_url'])
-            file.write(response)
-    except:
-        print(response)
+    if media.get('thumbnail_url'):
+        response = client.media_download_photo_by_url_v1(media['thumbnail_url'])
+        try:
+            with open(f'data/users/{user_pk}/medias/{media["pk"]}/images/thumbnail.jpg', 'wb') as file:
+
+                file.write(response)
+        except:
+            print(response)
     for resource in media['resources']:
         os.makedirs(f'data/users/{user_pk}/medias/{media["pk"]}/images/{resource["pk"]}/',
                     exist_ok=True)
@@ -95,3 +98,15 @@ def save_videos(client: Client,
                     print(response)
             i += 1
     return paths
+
+
+def get_and_save_image(url, filename, client: Client, use_requests=False):
+    print(f'скачивание {url}', end=' ')
+    if use_requests:
+        response = requests.get(url)
+    else:
+        response = client.media_download_photo_by_url_v1(url)
+
+    with open(f'data/images/{filename}', 'wb') as file:
+        file.write(response)
+    print(f'скачано data/images/{filename}')

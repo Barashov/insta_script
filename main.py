@@ -12,7 +12,7 @@ from info import save_images, get_medias_by_pk
 from time import time
 from db import create_tables, create_medias_table
 from crud import update_user, get_users_without_media
-from info import save_media
+from info import save_media, get_and_save_image
 import settings
 
 APP_DIR: Path = Path(__file__).parent
@@ -64,6 +64,7 @@ def save_qql_followers_to_base(
     conn: sqlite3.Connection,
     followers: list[dict],
     table_name: str = DEFAULT_FOLLOWERS_TABLE_NAME,
+    client: Client = None
 ):
     logger.debug(f"Insert {len(followers) } to the base")
     update_data_sql = (
@@ -80,6 +81,9 @@ def save_qql_followers_to_base(
     )
 
     for follower in followers:
+        get_and_save_image(follower['profile_pic_url'],
+                           f'{follower["pk"]}.jpg',
+                           client)
         conn.execute(
             update_data_sql,
             (
@@ -91,6 +95,7 @@ def save_qql_followers_to_base(
                 follower["is_verified"],
             ),
         )
+        conn.commit()
 
 
 def save_page_info_to_base(
@@ -105,6 +110,7 @@ def save_page_info_to_base(
         f"(page_number, cursor) values (?,?)"
     )
     conn.execute(insert_sql, (page_number, cursor))
+    conn.commit()
 
 
 def get_last_page_info(
@@ -162,7 +168,7 @@ def load_followers_qql(
             last_page_id = data[1]
             iteration_count += 1
             try:
-                save_qql_followers_to_base(conn, followers)
+                save_qql_followers_to_base(conn, followers, client=client)
                 save_page_info_to_base(
                     conn, iteration_count + last_page_number, last_page_id
                 )
@@ -226,29 +232,30 @@ def is_full_data(user: tuple):
 if __name__ == "__main__":
     os.makedirs('data/', exist_ok=True)
     os.makedirs('data/users/', exist_ok=True)
-    db = 'data/6672393852.sqlite'
+    os.makedirs('data/images/', exist_ok=True)
+
+    db = f'data/{settings.USER_ID}.sqlite'
     with sqlite3.connect(db) as connection:
         create_tables(connection)
         create_medias_table(connection)
 
-    # users = load_followers
-    # save_qql_followers_to_base()
+    hiker_api_client = Client(settings.TOKEN, timeout=None)
 
-    hiker_api_client = Client(settings.TOKEN)
-
-    with sqlite3.connect(db) as connection:
+    with sqlite3.connect(db) as session:
+        load_followers_qql(session, hiker_api_client, settings.USER_ID)
+    # with sqlite3.connect(db) as connection:
         # можно каждый раз запускать скрипт по новой. здесь просто берутся те id которых нет в media
         # можно поставить в параллель ничего не меняя.
-        users = get_users_without_media(connection, 10)
+        # users = get_users_without_media(connection, 10)
 
-    for user in users:
-        pk = user[0]
-        medias = get_medias_by_pk(pk, hiker_api_client)
-        print(f'скачивание {len(medias)} медиа пользователя {pk}')
-        with sqlite3.connect('data/6672393852.sqlite') as conn:
-            for media in medias:
-                if type(media) is dict:
-                    save_media(pk, media, hiker_api_client, conn)
+    # for user in users:
+    #     pk = user[0]
+    #     medias = get_medias_by_pk(pk, hiker_api_client)
+    #     print(f'скачивание {len(medias)} медиа пользователя {pk}')
+    #     with sqlite3.connect('data/6672393852.sqlite') as conn:
+    #         for media in medias:
+    #             if type(media) is dict:
+    #                 save_media(pk, media, hiker_api_client, conn)
 
     # with sqlite3.connect('data/6672393852.sqlite') as conn:
     #     create_medias_table(conn)
