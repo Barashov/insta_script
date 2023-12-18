@@ -241,21 +241,21 @@ if __name__ == "__main__":
 
     hiker_api_client = Client(settings.TOKEN, timeout=None)
 
-    with sqlite3.connect(db) as session:
-        load_followers_qql(session, hiker_api_client, settings.USER_ID)
+    #with sqlite3.connect(db) as session:
+    #    load_followers_qql(session, hiker_api_client, settings.USER_ID)
     # with sqlite3.connect(db) as connection:
         # можно каждый раз запускать скрипт по новой. здесь просто берутся те id которых нет в media
         # можно поставить в параллель ничего не меняя.
         # users = get_users_without_media(connection, 10)
 
     # for user in users:
-    #     pk = user[0]
-    #     medias = get_medias_by_pk(pk, hiker_api_client)
-    #     print(f'скачивание {len(medias)} медиа пользователя {pk}')
-    #     with sqlite3.connect('data/6672393852.sqlite') as conn:
-    #         for media in medias:
-    #             if type(media) is dict:
-    #                 save_media(pk, media, hiker_api_client, conn)
+    pk = settings.USER_ID
+    medias = get_medias_by_pk(pk, hiker_api_client)
+    print(f'скачивание {len(medias)} медиа пользователя {pk}')
+    with sqlite3.connect(db) as conn:
+        for media in medias:
+            if type(media) is dict:
+                save_media(pk, media, hiker_api_client, conn)
 
     # with sqlite3.connect('data/6672393852.sqlite') as conn:
     #     create_medias_table(conn)
